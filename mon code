@@ -1,0 +1,187 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <fstream>
+#include <string>
+
+struct Contact {
+    std::string nom;
+    std::string numero;
+    std::string email;
+    std::string adresse;
+};
+
+std::vector<Contact> contacts;
+
+// Fonction pour ajouter un contact
+void ajouterContact() {
+    Contact contact;
+    std::cout << "Nom : ";
+    std::cin.ignore();
+    std::getline(std::cin, contact.nom);
+    std::cout << "Numéro de téléphone : ";
+    std::getline(std::cin, contact.numero);
+    std::cout << "Email : ";
+    std::getline(std::cin, contact.email);
+    std::cout << "Adresse : ";
+    std::getline(std::cin, contact.adresse);
+
+    contacts.push_back(contact);
+    std::cout << "Contact ajouté avec succès !\n";
+}
+
+// Fonction pour modifier un contact
+void modifierContact() {
+    std::string nom;
+    std::cout << "Entrez le nom du contact à modifier : ";
+    std::cin.ignore();
+    std::getline(std::cin, nom);
+
+    for (auto& contact : contacts) {
+        if (contact.nom == nom) {
+            std::cout << "Modifier les informations (laisser vide pour garder l'existant) :\n";
+            std::cout << "Nom [" << contact.nom << "]: ";
+            std::string nouveauNom;
+            std::getline(std::cin, nouveauNom);
+            if (!nouveauNom.empty()) contact.nom = nouveauNom;
+
+            std::cout << "Numéro [" << contact.numero << "]: ";
+            std::string nouveauNumero;
+            std::getline(std::cin, nouveauNumero);
+            if (!nouveauNumero.empty()) contact.numero = nouveauNumero;
+
+            std::cout << "Email [" << contact.email << "]: ";
+            std::string nouveauEmail;
+            std::getline(std::cin, nouveauEmail);
+            if (!nouveauEmail.empty()) contact.email = nouveauEmail;
+
+            std::cout << "Adresse [" << contact.adresse << "]: ";
+            std::string nouvelleAdresse;
+            std::getline(std::cin, nouvelleAdresse);
+            if (!nouvelleAdresse.empty()) contact.adresse = nouvelleAdresse;
+
+            std::cout << "Contact modifié avec succès !\n";
+            return;
+        }
+    }
+    std::cout << "Contact introuvable.\n";
+}
+
+// Fonction pour supprimer un contact
+void supprimerContact() {
+    std::string nom;
+    std::cout << "Entrez le nom du contact à supprimer : ";
+    std::cin.ignore();
+    std::getline(std::cin, nom);
+
+    auto it = std::remove_if(contacts.begin(), contacts.end(),
+        [&nom](const Contact& contact) {
+            return contact.nom == nom;
+        });
+
+    if (it != contacts.end()) {
+        contacts.erase(it, contacts.end());
+        std::cout << "Contact supprimé avec succès !\n";
+    } else {
+        std::cout << "Contact introuvable.\n";
+    }
+}
+
+// Fonction pour rechercher un contact
+void rechercherContact() {
+    std::string nom;
+    std::cout << "Entrez le nom à rechercher : ";
+    std::cin.ignore();
+    std::getline(std::cin, nom);
+
+    for (const auto& contact : contacts) {
+        if (contact.nom.find(nom) != std::string::npos) {
+            std::cout << "Nom : " << contact.nom << "\n"
+                      << "Numéro : " << contact.numero << "\n"
+                      << "Email : " << contact.email << "\n"
+                      << "Adresse : " << contact.adresse << "\n\n";
+        }
+    }
+}
+
+// Fonction pour trier les contacts par nom
+void trierContacts() {
+    std::sort(contacts.begin(), contacts.end(),
+        [](const Contact& a, const Contact& b) {
+            return a.nom < b.nom;
+        });
+    std::cout << "Contacts triés par nom !\n";
+}
+
+// Fonction pour sauvegarder les contacts dans un fichier
+void sauvegarderDansFichier() {
+    std::ofstream fichier("contacts.txt");
+    for (const auto& contact : contacts) {
+        fichier << contact.nom << "\n"
+                << contact.numero << "\n"
+                << contact.email << "\n"
+                << contact.adresse << "\n";
+    }
+    fichier.close();
+    std::cout << "Contacts sauvegardés dans 'contacts.txt'.\n";
+}
+
+// Fonction pour charger les contacts depuis un fichier
+void chargerDepuisFichier() {
+    std::ifstream fichier("contacts.txt");
+    if (!fichier) {
+        std::cout << "Aucun fichier de sauvegarde trouvé.\n";
+        return;
+    }
+
+    contacts.clear();
+    Contact contact;
+    while (std::getline(fichier, contact.nom) &&
+           std::getline(fichier, contact.numero) &&
+           std::getline(fichier, contact.email) &&
+           std::getline(fichier, contact.adresse)) {
+        contacts.push_back(contact);
+    }
+    fichier.close();
+    std::cout << "Contacts chargés depuis 'contacts.txt'.\n";
+}
+
+// Menu principal
+void afficherMenu() {
+    std::cout << "\n=== Bibliothèque de Gestion de Contacts ===\n";
+    std::cout << "1. Ajouter un contact\n";
+    std::cout << "2. Modifier un contact\n";
+    std::cout << "3. Supprimer un contact\n";
+    std::cout << "4. Rechercher un contact\n";
+    std::cout << "5. Trier les contacts par nom\n";
+    std::cout << "6. Sauvegarder les contacts\n";
+    std::cout << "7. Charger les contacts\n";
+    std::cout << "8. Quitter\n";
+    std::cout << "Choisissez une option : ";
+}
+
+int main() {
+    int choix;
+
+    chargerDepuisFichier(); // Charger les contacts au démarrage
+
+    do {
+        afficherMenu();
+        std::cin >> choix;
+
+        switch (choix) {
+            case 1: ajouterContact(); break;
+            case 2: modifierContact(); break;
+            case 3: supprimerContact(); break;
+            case 4: rechercherContact(); break;
+            case 5: trierContacts(); break;
+            case 6: sauvegarderDansFichier(); break;
+            case 7: chargerDepuisFichier(); break;
+            case 8: std::cout << "Au revoir !\n"; break;
+            default: std::cout << "Option invalide. Réessayez.\n";
+        }
+    } while (choix != 8);
+
+    return 0;
+}
+
